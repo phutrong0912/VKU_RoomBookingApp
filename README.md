@@ -63,18 +63,6 @@ An interactive, responsive mobile application for booking campus study rooms and
 
 ---
 
-## 🏆 Grading Rubric Alignment (Target: 10/10)
-
-| Criterion | Weight | Requirement (9-10) | Implementation Details |
-|---|---|---|---|
-| **UI/UX** | **25%** | Polished, animations | - Tailored VKU campus theme with accessible contrast and clean typography.<br>- Animated pulse shimmer skeleton loading (`LoadingSkeleton.tsx`, `RoomCardSkeleton`).<br>- Spring entry & translation interpolation on `ConflictAlertBanner`.<br>- Celebration scale-in spring animation on `BookingSuccessScreen`.<br>- 60fps-optimized FlatList feed with memoization and `getItemLayout`.<br>- Exact matching of wireframe cards (📍 building, 👥 seats, ✅ Available / 🔴 Occupied badges). |
-| **Features** | **30%** | Search + filter + booking | - **Search**: Debounced real-time query searching room name, code, building, description, and amenities.<br>- **Multi-parameter filter chips & modal**: Building, room category, seat capacity, availability status, and 7 amenities.<br>- **Time-slot selector**: Morning, afternoon, and evening blocks with 7-day date carousel.<br>- **Conflict prevention engine**: Locks occupied slots, detects user schedule overlaps, enforces daily quota (max 3 slots/day).<br>- **Booking lifecycle**: Instant reservation creation + cancellation with immediate slot release.<br>- **Digital QR pass & door scanner**: Camera scanner with viewfinder reticle + scannable 2D barcode bitmap generation. |
-| **Navigation** | **15%** | Stack + Tabs, typed params | - **React Navigation 7** (`@react-navigation/native-stack` + `@react-navigation/bottom-tabs`).<br>- 3 Bottom Tabs: `BrowseRooms`, `MyBookings`, `Profile`.<br>- Stack screens: `MainTabs`, `RoomDetail`, `BookingSuccess`.<br>- Strictly typed params (`RootStackParamList`, `MainTabParamList`, `NavigatorScreenParams`). |
-| **State** | **15%** | Zustand + TanStack Query | - **Zustand (Client State)**: Lightweight reactive stores for search/filter state (`useFilterStore`), draft booking selections (`useBookingStore`), and user profile/quota (`useUserStore`).<br>- **TanStack Query (Server State)**: Server cache management with query keys (`['rooms', filters]`, `['room', id]`, `['bookings', userId]`), cache invalidation upon mutations (`useCreateBookingMutation`, `useCancelBookingMutation`), and optimistic state synchronization. |
-| **Code Quality & Backend** | **15%** | TypeScript strict, hooks, Firebase for Backend | - **TypeScript Strict Mode**: `"strict": true`, 0 type errors across all layers.<br>- **Clean Hooks Architecture**: Custom query & mutation hooks (`useRoomsQuery`, `useRoomDetailQuery`, `useBookingsQuery`, etc.).<br>- **Firebase Backend**: Firebase Firestore integrated in [`src/services/firebase.ts`](file:///home/phu-trong/VKU-Room-Booking-App/src/services/firebase.ts), [`src/api/roomApi.ts`](file:///home/phu-trong/VKU-Room-Booking-App/src/api/roomApi.ts), and [`src/api/bookingApi.ts`](file:///home/phu-trong/VKU-Room-Booking-App/src/api/bookingApi.ts) with Firestore `rooms` and `bookings` collections, auto-seeding on launch, and graceful offline resilience. |
-
----
-
 ## 📂 Project Structure
 
 ```
