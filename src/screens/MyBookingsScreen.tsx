@@ -8,9 +8,9 @@ import {
   Image,
   Alert,
   Modal,
-  SafeAreaView,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { shadows } from '../constants/theme';

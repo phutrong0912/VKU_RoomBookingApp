@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,13 +24,24 @@ export const BookingSuccessScreen: React.FC = () => {
 
   const booking = bookings.find((b) => b.id === bookingId);
 
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 5,
+      tension: 60,
+      useNativeDriver: true,
+    }).start();
+  }, [scaleAnim]);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        {/* Success Icon */}
-        <View style={styles.iconCircle}>
+        {/* Animated Success Icon */}
+        <Animated.View style={[styles.iconCircle, { transform: [{ scale: scaleAnim }] }]}>
           <Ionicons name="checkmark" size={54} color="#FFFFFF" />
-        </View>
+        </Animated.View>
 
         <Text style={styles.title}>Reservation Confirmed!</Text>
         <Text style={styles.subtitle}>

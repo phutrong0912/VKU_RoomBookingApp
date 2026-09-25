@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
 import { ConflictCheckResult } from '../../types/booking';
@@ -11,6 +11,21 @@ interface ConflictAlertBannerProps {
 export const ConflictAlertBanner: React.FC<ConflictAlertBannerProps> = ({
   conflictResult,
 }) => {
+  const anim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (conflictResult?.hasConflict) {
+      Animated.spring(anim, {
+        toValue: 1,
+        friction: 7,
+        tension: 50,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      anim.setValue(0);
+    }
+  }, [conflictResult, anim]);
+
   if (!conflictResult || !conflictResult.hasConflict) {
     return null;
   }
@@ -18,7 +33,23 @@ export const ConflictAlertBanner: React.FC<ConflictAlertBannerProps> = ({
   const isWarning = conflictResult.type === 'QUOTA_EXCEEDED';
 
   return (
-    <View style={[styles.container, isWarning ? styles.warningBox : styles.errorBox]}>
+    <Animated.View
+      style={[
+        styles.container,
+        isWarning ? styles.warningBox : styles.errorBox,
+        {
+          opacity: anim,
+          transform: [
+            {
+              translateY: anim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-10, 0],
+              }),
+            },
+          ],
+        },
+      ]}
+    >
       <Ionicons
         name={isWarning ? 'warning-outline' : 'alert-circle'}
         size={20}
@@ -37,7 +68,7 @@ export const ConflictAlertBanner: React.FC<ConflictAlertBannerProps> = ({
           {conflictResult.reason}
         </Text>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -88,4 +119,3 @@ const styles = StyleSheet.create({
     color: '#B45309',
   },
 });
-

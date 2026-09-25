@@ -21,6 +21,7 @@ import { FilterChip } from '../components/common/FilterChip';
 import { RoomCard, ROOM_CARD_HEIGHT } from '../components/room/RoomCard';
 import { FilterModal } from '../components/room/FilterModal';
 import { QRScannerModal } from '../components/booking/QRScannerModal';
+import { RoomCardSkeleton } from '../components/common/LoadingSkeleton';
 import { Alert } from 'react-native';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -176,9 +177,10 @@ export const BrowseRoomsScreen: React.FC = () => {
 
       {/* 60fps Optimized FlatList */}
       {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading campus rooms...</Text>
+        <View style={styles.listContent}>
+          <RoomCardSkeleton />
+          <RoomCardSkeleton />
+          <RoomCardSkeleton />
         </View>
       ) : (
         <FlatList
