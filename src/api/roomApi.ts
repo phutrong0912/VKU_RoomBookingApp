@@ -1,15 +1,38 @@
 import { Room, RoomFilterState } from '../types/room';
 import { TimeSlot } from '../types/booking';
 import { INITIAL_ROOMS, generateSlotsForRoomAndDate } from './mockData';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { db, seedFirestoreIfEmpty, withTimeout } from '../services/firebase';
+import { isFirebaseConfigured } from '../services/firebaseConfig';
 
 // In-memory slot storage cache so slot modifications persist during the session
 const roomSlotsCache: Record<string, TimeSlot[]> = {};
 
+/**
+ * Fetch rooms from Firebase Firestore backend with multi-parameter filtering
+ * If Firebase is not configured or network times out, instantly serves preloaded catalog
+ */
 export async function fetchRooms(filters?: Partial<RoomFilterState>): Promise<Room[]> {
-  // Simulate network latency for realistic TanStack Query behavior
-  await new Promise((resolve) => setTimeout(resolve, 250));
+  let results: Room[] = [];
 
-  let results = [...INITIAL_ROOMS];
+  if (db && isFirebaseConfigured()) {
+    try {
+      await seedFirestoreIfEmpty();
+      const querySnapshot = await withTimeout(getDocs(collection(db, 'rooms')), 2000);
+      if (!querySnapshot.empty) {
+        results = querySnapshot.docs.map((docSnap) => docSnap.data() as Room);
+      } else {
+        results = [...INITIAL_ROOMS];
+      }
+    } catch (err) {
+      console.warn('[Firebase] fetchRooms fallback to local catalog:', (err as any)?.message);
+      results = [...INITIAL_ROOMS];
+    }
+  } else {
+    // Instant local serving with minor debounce simulation
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    results = [...INITIAL_ROOMS];
+  }
 
   if (!filters) return results;
 
@@ -56,8 +79,22 @@ export async function fetchRooms(filters?: Partial<RoomFilterState>): Promise<Ro
   return results;
 }
 
+/**
+ * Fetch a specific room by ID from Firebase Firestore or local cache
+ */
 export async function fetchRoomById(roomId: string): Promise<Room> {
-  await new Promise((resolve) => setTimeout(resolve, 200));
+  if (db && isFirebaseConfigured()) {
+    try {
+      const docRef = doc(db, 'rooms', roomId);
+      const docSnap = await withTimeout(getDoc(docRef), 2000);
+      if (docSnap.exists()) {
+        return docSnap.data() as Room;
+      }
+    } catch (err) {
+      console.warn('[Firebase] fetchRoomById fallback:', (err as any)?.message);
+    }
+  }
+
   const room = INITIAL_ROOMS.find((r) => r.id === roomId);
   if (!room) {
     throw new Error(`Room with id ${roomId} not found`);
@@ -65,8 +102,10 @@ export async function fetchRoomById(roomId: string): Promise<Room> {
   return room;
 }
 
+/**
+ * Fetch available time slots for a specific room and calendar date
+ */
 export async function fetchRoomSlots(roomId: string, date: string): Promise<TimeSlot[]> {
-  await new Promise((resolve) => setTimeout(resolve, 200));
   const cacheKey = `${roomId}_${date}`;
   if (!roomSlotsCache[cacheKey]) {
     roomSlotsCache[cacheKey] = generateSlotsForRoomAndDate(roomId, date);
@@ -74,6 +113,9 @@ export async function fetchRoomSlots(roomId: string, date: string): Promise<Time
   return [...roomSlotsCache[cacheKey]];
 }
 
+/**
+ * Update slot occupancy state
+ */
 export function updateSlotOccupancy(
   roomId: string,
   date: string,
@@ -89,4 +131,3 @@ export function updateSlotOccupancy(
     s.id === slotId ? { ...s, isOccupied, bookedBy: isOccupied ? bookedBy : undefined } : s
   );
 }
-
